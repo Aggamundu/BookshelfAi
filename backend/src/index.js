@@ -139,4 +139,4 @@ app.listen(PORT, () => {
 });
 
 // Export for Vercel serverless
-export default app;
+module.exports = = app;
