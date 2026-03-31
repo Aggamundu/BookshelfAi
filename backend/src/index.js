@@ -48,7 +48,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: true, // Temporarily allow all origins for testing
+    origin: corsOriginConfig(),
     credentials: true,
   })
 );
