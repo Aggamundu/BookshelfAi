@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import upload from '../middleware/upload.js';
+import { normalizePhoneImage } from '../middleware/normalizePhoneImage.js';
 import { validateImageDimensions } from '../middleware/validateImageUpload.js';
 import { strictRateLimiter } from '../middleware/rateLimiter.js';
 import { extractBooksFromImage, generateRecommendations } from '../services/aiService.js';
@@ -16,18 +17,24 @@ router.use(strictRateLimiter);
  * Body: multipart/form-data with field "image"
  * Returns the list of books detected on the shelf.
  */
-router.post('/scan', upload.single('image'), validateImageDimensions, async (req, res, next) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No image file provided. Use field name "image".' });
-    }
+router.post(
+  '/scan',
+  upload.single('image'),
+  normalizePhoneImage,
+  validateImageDimensions,
+  async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided. Use field name "image".' });
+      }
 
-    const books = await extractBooksFromImage(req.file.buffer, req.file.mimetype);
-    res.json({ books });
-  } catch (err) {
-    next(err);
+      const books = await extractBooksFromImage(req.file.buffer, req.file.mimetype);
+      res.json({ books });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /**
  * POST /api/books/recommend

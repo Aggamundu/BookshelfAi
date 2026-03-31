@@ -23,7 +23,7 @@ export default function ShelfCaptureActions({ onFileSelected, disabled }) {
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/*"
         capture="environment"
         className="hidden"
         onChange={handleChange}
@@ -32,7 +32,7 @@ export default function ShelfCaptureActions({ onFileSelected, disabled }) {
       <input
         ref={galleryInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/*,.heic,.heif"
         className="hidden"
         onChange={handleChange}
         aria-hidden

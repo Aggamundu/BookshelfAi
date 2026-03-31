@@ -15,7 +15,9 @@ export function UserProvider({ children }) {
       const data = await ensureSession();
       setUserId(data?.userId ?? getStoredUserId());
     } catch (e) {
-      setError(e.message ?? String(e));
+      const msg = e.message ?? String(e);
+      console.error('[BookshelfAi] Session failed:', msg, e);
+      setError(msg);
       throw e;
     } finally {
       setReady(true);

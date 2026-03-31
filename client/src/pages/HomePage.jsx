@@ -28,7 +28,7 @@ function readStoredShelfBooks() {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { sessionReady, sessionError, refreshSession } = useUser()
+  const { sessionReady, refreshSession } = useUser()
   const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState(null)
   const [identifiedBooks, setIdentifiedBooks] = useState(() =>
@@ -89,16 +89,8 @@ export default function HomePage() {
 
         <HeroSection />
 
-        <p className="mb-6 max-w-lg text-center font-body text-sm text-on-surface-variant">
-          We send your photo to the API (rate-limited) to read spines with OpenAI vision. Then you&apos;ll set
-          genres, optionally add history, and get recommendations anchored to these titles.
-        </p>
-
         {!sessionReady ? (
           <p className="mb-4 font-body text-xs text-on-surface-variant">Connecting your session…</p>
-        ) : null}
-        {sessionError ? (
-          <p className="mb-4 font-body text-xs text-error">Session: {sessionError}</p>
         ) : null}
 
         <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-12">
@@ -128,13 +120,7 @@ export default function HomePage() {
           </p>
         ) : null}
 
-        {!scanning && hasIdentifiedBooks ? (
-          <div className="mt-8 flex w-full justify-center px-0">
-            <IdentifiedBooksList books={identifiedBooks} />
-          </div>
-        ) : null}
-
-        <div className="mt-10 flex w-full max-w-lg flex-col items-center gap-3">
+        <div className="mt-8 flex w-full max-w-lg flex-col items-center gap-3">
           <button
             type="button"
             disabled={!hasIdentifiedBooks || scanning}
@@ -145,10 +131,21 @@ export default function HomePage() {
           </button>
           {!hasIdentifiedBooks && !scanning ? (
             <p className="text-center font-body text-xs text-on-surface-variant">
-              Upload a shelf photo and wait for titles to appear above.
+              Upload a shelf photo and wait for titles to appear below.
             </p>
           ) : null}
         </div>
+
+        {!scanning && hasIdentifiedBooks ? (
+          <div className="mt-8 flex w-full justify-center px-0">
+            <IdentifiedBooksList books={identifiedBooks} />
+          </div>
+        ) : null}
+
+        <p className="mt-10 max-w-lg text-center font-body text-sm text-on-surface-variant">
+          We send your photo to the API (rate-limited) to read spines with OpenAI vision. Then you&apos;ll set
+          genres, optionally add history, and get recommendations anchored to these titles.
+        </p>
       </main>
 
       <SiteFooter />

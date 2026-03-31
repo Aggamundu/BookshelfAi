@@ -115,9 +115,6 @@ export default function HistoryPage() {
         {!sessionReady ? (
           <p className="font-body text-sm text-on-surface-variant">Connecting session…</p>
         ) : null}
-        {sessionError ? (
-          <p className="font-body text-sm text-error">Session error: {sessionError}</p>
-        ) : null}
 
         {loading ? (
           <p className="font-body text-on-surface-variant">Loading your library…</p>

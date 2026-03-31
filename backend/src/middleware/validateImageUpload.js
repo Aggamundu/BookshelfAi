@@ -20,6 +20,8 @@ export function validateImageDimensions(req, res, next) {
     }
     next();
   } catch {
-    return res.status(400).json({ error: 'Could not read image dimensions. Use a valid JPEG, PNG, GIF, or WebP.' });
+    return res.status(400).json({
+      error: 'Could not read image dimensions. Use a clear JPEG, PNG, WebP, or a phone photo (HEIC is converted on the server).',
+    });
   }
 }

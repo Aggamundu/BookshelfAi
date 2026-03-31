@@ -132,9 +132,6 @@ export default function RecommendationsPage() {
         {!sessionReady ? (
           <p className="font-body text-sm text-on-surface-variant">Connecting session…</p>
         ) : null}
-        {sessionError ? (
-          <p className="font-body text-sm text-error">Session error: {sessionError}</p>
-        ) : null}
 
         {loading && sessionReady && !sessionError ? (
           <LoadingBlock
