@@ -93,6 +93,10 @@ app.use((err, req, res, _next) => {
     return res.status(413).json({ error: 'File too large.' });
   }
 
+  if (err.message?.includes?.('Unsupported file type')) {
+    return res.status(400).json({ error: err.message });
+  }
+
   const status = err.status ?? err.statusCode ?? 500;
   if (status >= 500) {
     req.log?.error(

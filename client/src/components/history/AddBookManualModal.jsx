@@ -4,13 +4,12 @@ import { useState } from 'react'
  * @param {{
  *   open: boolean
  *   onClose: () => void
- *   onSubmit: (payload: { book_title: string, author: string, rating: number | null }) => Promise<void>
+ *   onSubmit: (payload: { book_title: string, author: string | null }) => Promise<void>
  * }} props
  */
 export default function AddBookManualModal({ open, onClose, onSubmit }) {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [rating, setRating] = useState(5)
   const [saving, setSaving] = useState(false)
 
   if (!open) return null
@@ -23,11 +22,9 @@ export default function AddBookManualModal({ open, onClose, onSubmit }) {
       await onSubmit({
         book_title: title.trim(),
         author: author.trim() || null,
-        rating: rating || null,
       })
       setTitle('')
       setAuthor('')
-      setRating(5)
       onClose()
     } catch {
       /* parent alerts */
@@ -76,21 +73,6 @@ export default function AddBookManualModal({ open, onClose, onSubmit }) {
               className="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/30"
               placeholder="Paulo Coelho"
             />
-          </div>
-          <div>
-            <label htmlFor="book-rating" className="font-label text-sm text-on-surface-variant">
-              Rating (1–5)
-            </label>
-            <input
-              id="book-rating"
-              type="range"
-              min={1}
-              max={5}
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              className="mt-2 w-full"
-            />
-            <p className="mt-1 font-body text-sm text-on-surface-variant">{rating} / 5</p>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button

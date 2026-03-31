@@ -33,10 +33,11 @@ router.post('/scan', upload.single('image'), validateImageDimensions, async (req
  * POST /api/books/recommend
  * Body (JSON):
  *   { userId: string, books: [{title, author}] }
+ * `books` must be titles identified from the user's shelf (client sends scan results only).
  * userId: anonymous UUID from POST /api/users/session (or client-generated then ensured).
  *
- * Fetches the user's reading history and preferences from the DB,
- * then asks the AI for personalised recommendations.
+ * Fetches the user's reading history and preferences from the DB for extra context,
+ * then asks the AI for personalised recommendations (new books not on that shelf list).
  * Results are cached in Redis keyed by userId + book list.
  */
 router.post('/recommend', async (req, res, next) => {

@@ -1,13 +1,14 @@
 import { useRef } from 'react'
 
 /**
- * @param {{ onFileSelected?: (file: File) => void }} props
+ * @param {{ onFileSelected?: (file: File) => void, disabled?: boolean }} props
  */
-export default function ShelfCaptureActions({ onFileSelected }) {
+export default function ShelfCaptureActions({ onFileSelected, disabled }) {
   const cameraInputRef = useRef(null)
   const galleryInputRef = useRef(null)
 
   function handleChange(e) {
+    if (disabled) return
     const file = e.target.files?.[0]
     if (file) {
       onFileSelected?.(file)
@@ -16,7 +17,9 @@ export default function ShelfCaptureActions({ onFileSelected }) {
   }
 
   return (
-    <div className="flex w-full flex-col justify-center space-y-6">
+    <div
+      className={`flex w-full flex-col justify-center space-y-6 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+    >
       <input
         ref={cameraInputRef}
         type="file"
@@ -50,8 +53,12 @@ export default function ShelfCaptureActions({ onFileSelected }) {
           </span>
         </div>
         <div className="text-center">
-          <span className="block font-headline text-xl font-bold">Capture Shelf</span>
-          <span className="block font-body text-sm opacity-70">Use your camera to scan</span>
+          <span className="block font-headline text-xl font-bold">
+            {disabled ? 'Analyzing…' : 'Capture Shelf'}
+          </span>
+          <span className="block font-body text-sm opacity-70">
+            {disabled ? 'Reading spines with AI' : 'Use your camera to scan'}
+          </span>
         </div>
       </button>
 
@@ -63,7 +70,7 @@ export default function ShelfCaptureActions({ onFileSelected }) {
         <span className="material-symbols-outlined" aria-hidden>
           upload_file
         </span>
-        <span className="font-body font-medium">Upload from Gallery</span>
+        <span className="font-body font-medium">{disabled ? 'Please wait…' : 'Upload from Gallery'}</span>
       </button>
     </div>
   )

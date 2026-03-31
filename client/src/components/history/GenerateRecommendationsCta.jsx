@@ -3,7 +3,7 @@
  */
 export default function GenerateRecommendationsCta({ onClick, disabled }) {
   return (
-    <div className="mt-16 flex justify-center">
+    <div className="flex justify-center">
       <button
         type="button"
         onClick={onClick}

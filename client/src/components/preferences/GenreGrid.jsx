@@ -6,10 +6,12 @@ import { GENRE_OPTIONS } from './genreOptions.js'
  */
 export default function GenreGrid({ selectedIds, onToggle }) {
   return (
-    <div className="space-y-8 md:col-span-8">
+    <div className="space-y-8">
       <div className="flex items-end justify-between">
         <h2 className="font-headline text-3xl">Favorite Genres</h2>
-        <span className="font-sans text-sm italic text-on-surface-variant opacity-60">Select multiple</span>
+        <span className="font-sans text-sm italic text-on-surface-variant opacity-60">
+          At least one · select multiple
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

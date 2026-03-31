@@ -1,6 +1,6 @@
 /**
  * Parsed shelf scan for POST /api/books/recommend (`books` array).
- * Set from the home flow when shelf scan is wired: `sessionStorage.setItem('bookshelfai_shelfBooks', JSON.stringify([{ title, author }]))`.
+ * Set after POST /api/books/scan succeeds (see HomePage).
  */
 export function getShelfBooksFromStorage() {
   try {

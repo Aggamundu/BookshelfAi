@@ -1,6 +1,6 @@
 export default function HeroSection() {
   return (
-    <div className="mb-8 text-center">
+    <div className="text-center">
       <h1 className="mb-4 text-5xl font-bold tracking-tight text-primary md:text-6xl">
         Show us your books!
       </h1>

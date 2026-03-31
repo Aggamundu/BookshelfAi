@@ -114,7 +114,7 @@ ${historyList || '(none yet)'}
 User preferences:
 ${prefBlock || '(none specified)'}
 
-Recommend 5 books the user has NOT already read and does NOT currently own.
+Recommend 5 books on the user's shelf that the user would enjoy based on their preferences and reading history.
 Return ONLY a JSON array — no markdown, no explanation — in this exact shape:
 [{"title": "...", "author": "...", "reason": "one sentence why they'd enjoy it"}, ...]`;
 

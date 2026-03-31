@@ -5,38 +5,19 @@ import FlowStepper from '../components/flow/FlowStepper.jsx'
 import RecommendationArticle from '../components/recommendations/RecommendationArticle.jsx'
 import RecommendationsFooter from '../components/recommendations/RecommendationsFooter.jsx'
 import RecommendationsHero from '../components/recommendations/RecommendationsHero.jsx'
+import LoadingBlock from '../components/ui/LoadingBlock.jsx'
 import { useUser } from '../context/UserContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { hasPrefsCompleteSession, hasShelfPhotoSession } from '../lib/flowStorage.js'
+import { PAGE_FLOW_MAIN, PAGE_MAIN_CLASS } from '../layout/pageLayout.js'
 import { getShelfBooksFromStorage } from '../lib/shelfBooks.js'
 
-function buildHeroSubtitle(prefs, usedShelf) {
+function buildHeroSubtitle(prefs) {
   const genres = prefs?.favorite_genres?.filter(Boolean) ?? []
   const genrePhrase = genres.length > 0 ? genres.slice(0, 3).join(', ') : null
-
-  if (usedShelf) {
-    return genrePhrase
-      ? `Based on your recent shelf upload and affinity for ${genrePhrase}.`
-      : `Based on your recent shelf upload and reading profile.`
-  }
   return genrePhrase
-    ? `Based on your reading history and preferences — including ${genrePhrase}.`
-    : `Based on your reading history and curated preferences.`
-}
-
-function resolveBooksForRecommend(historyRows) {
-  const fromShelf = getShelfBooksFromStorage()
-  if (fromShelf?.length) {
-    return { books: fromShelf, usedShelf: true }
-  }
-  const fromHistory = historyRows.slice(0, 10).map((h) => ({
-    title: h.book_title,
-    author: h.author || null,
-  }))
-  if (fromHistory.length) {
-    return { books: fromHistory, usedShelf: false }
-  }
-  return { books: [], usedShelf: false }
+    ? `Based on the books we identified on your shelf and your affinity for ${genrePhrase}.`
+    : `Based on the books we identified on your shelf and your saved preferences.`
 }
 
 export default function RecommendationsPage() {
@@ -45,20 +26,19 @@ export default function RecommendationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [prefs, setPrefs] = useState(null)
-  const [usedShelf, setUsedShelf] = useState(false)
   const [hadBooksForRequest, setHadBooksForRequest] = useState(false)
+  const [recSource, setRecSource] = useState(null)
+  const [loadPhase, setLoadPhase] = useState(null)
 
   const load = useCallback(async () => {
     if (!userId) return
     setLoading(true)
+    setLoadPhase('prefs')
     setError(null)
     setHadBooksForRequest(false)
+    setRecSource(null)
     try {
-      const [histRes, prefRes] = await Promise.all([
-        apiFetch(`/api/users/${userId}/history`),
-        apiFetch(`/api/users/${userId}/preferences`),
-      ])
-      const historyRows = histRes.history ?? []
+      const prefRes = await apiFetch(`/api/users/${userId}/preferences`)
       const preferences = prefRes.preferences ?? {
         favorite_genres: [],
         favorite_authors: [],
@@ -66,26 +46,34 @@ export default function RecommendationsPage() {
       }
       setPrefs(preferences)
 
-      const { books, usedShelf: shelf } = resolveBooksForRecommend(historyRows)
-      setUsedShelf(shelf)
+      const books = getShelfBooksFromStorage() ?? []
       setHadBooksForRequest(books.length > 0)
 
       if (books.length === 0) {
         setItems([])
+        setLoadPhase(null)
         setLoading(false)
         return
       }
 
+      setLoadPhase('recommend')
       const rec = await apiFetch('/api/books/recommend', {
         method: 'POST',
         body: { userId, books },
       })
       setItems(Array.isArray(rec.recommendations) ? rec.recommendations : [])
+      setRecSource(rec.source === 'cache' || rec.source === 'ai' ? rec.source : null)
     } catch (e) {
       console.error(e)
-      setError(e.message ?? 'Could not load recommendations.')
+      if (e.status === 429) {
+        const sec = e.body?.retryAfterSeconds ?? 60
+        setError(`Too many requests. Try again in about ${sec} seconds.`)
+      } else {
+        setError(e.message ?? 'Could not load recommendations.')
+      }
       setItems([])
     } finally {
+      setLoadPhase(null)
       setLoading(false)
     }
   }, [userId])
@@ -96,10 +84,14 @@ export default function RecommendationsPage() {
     load()
   }, [sessionReady, userId, load])
 
-  const subtitle = useMemo(
-    () => buildHeroSubtitle(prefs, usedShelf),
-    [prefs, usedShelf]
-  )
+  useEffect(() => {
+    if (!sessionReady || !userId) {
+      setLoading(false)
+      setLoadPhase(null)
+    }
+  }, [sessionReady, userId])
+
+  const subtitle = useMemo(() => buildHeroSubtitle(prefs), [prefs])
 
   const needsMoreContext =
     !loading &&
@@ -112,16 +104,16 @@ export default function RecommendationsPage() {
   if (!hasPrefsCompleteSession() || !hasShelfPhotoSession()) {
     return (
       <div className="min-h-screen bg-background font-body text-on-surface">
-        <main className="mx-auto max-w-lg px-6 py-16 text-center">
+        <main className={`${PAGE_MAIN_CLASS} flex flex-col gap-8 py-16 text-center`}>
           <FlowStepper step={4} />
-          <h2 className="mt-8 font-headline text-3xl text-primary">Finish earlier steps first</h2>
-          <p className="mt-4 font-body text-on-surface-variant">
+          <h2 className="font-headline text-3xl text-primary">Finish earlier steps first</h2>
+          <p className="font-body text-on-surface-variant">
             Add a shelf photo, then save your preferences, to see recommendations tied to the books we
             identified.
           </p>
           <Link
             to="/"
-            className="mt-8 inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 font-body font-medium text-on-primary hover:opacity-90"
+            className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 font-body font-medium text-on-primary hover:opacity-90"
           >
             Start from the beginning
           </Link>
@@ -132,20 +124,31 @@ export default function RecommendationsPage() {
 
   return (
     <div className="min-h-screen bg-background font-body text-on-surface">
-      <main className="mx-auto max-w-6xl px-6 pt-8">
+      <main className={PAGE_FLOW_MAIN}>
         <FlowBack to="/history">Reading history</FlowBack>
         <FlowStepper step={4} />
-        <RecommendationsHero subtitle={subtitle} />
+        {!loading ? <RecommendationsHero subtitle={subtitle} source={recSource} /> : null}
 
         {!sessionReady ? (
-          <p className="mb-8 font-body text-sm text-on-surface-variant">Connecting session…</p>
+          <p className="font-body text-sm text-on-surface-variant">Connecting session…</p>
         ) : null}
         {sessionError ? (
-          <p className="mb-8 font-body text-sm text-error">Session error: {sessionError}</p>
+          <p className="font-body text-sm text-error">Session error: {sessionError}</p>
         ) : null}
 
-        {loading ? (
-          <p className="font-body text-lg text-on-surface-variant">Curating your list…</p>
+        {loading && sessionReady && !sessionError ? (
+          <LoadingBlock
+            title={
+              loadPhase === 'recommend'
+                ? 'Generating recommendations'
+                : 'Loading your preferences'
+            }
+            subtitle={
+              loadPhase === 'recommend'
+                ? 'Matching your shelf to new titles with AI. Cached results load instantly when available.'
+                : 'Fetching your saved genres and notes.'
+            }
+          />
         ) : null}
 
         {error ? (
@@ -164,15 +167,12 @@ export default function RecommendationsPage() {
         {needsMoreContext ? (
           <div className="rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-low/50 px-6 py-12 text-center">
             <p className="font-body text-on-surface-variant">
-              We don&apos;t have titles from your shelf photo in this session.{' '}
+              Recommendations use only books identified from your shelf photo. We don&apos;t have that list in
+              this session —{' '}
               <Link to="/" className="font-medium text-primary underline underline-offset-2">
-                Upload a shelf photo
+                go back to step 1
               </Link>{' '}
-              on step 1, or add{' '}
-              <Link to="/history" className="font-medium text-primary underline underline-offset-2">
-                reading history
-              </Link>{' '}
-              so we can build a recommendation list.
+              and run the scan again.
             </p>
           </div>
         ) : null}

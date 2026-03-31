@@ -3,7 +3,7 @@
  */
 export default function HistoryPageHeader({ onAddManually }) {
   return (
-    <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
       <div className="space-y-4">
         <h2 className="font-headline text-4xl font-light leading-tight tracking-tight text-primary md:text-5xl">
           Pick your favorite books to help with recommendations.
