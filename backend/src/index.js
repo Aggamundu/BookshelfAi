@@ -31,14 +31,17 @@ function corsOriginConfig() {
     return true;
   }
   const raw = process.env.CORS_ORIGIN;
+  console.log('CORS_ORIGIN env:', raw);
   if (!raw?.trim()) {
     logger.warn('CORS_ORIGIN unset in production — set to your frontend URL(s), comma-separated');
     return false;
   }
-  return raw
+  const result = raw
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+  console.log('corsOriginConfig returning:', result);
+  return result;
 }
 
 app.use(
