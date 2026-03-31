@@ -12,6 +12,20 @@ export function getApiBase() {
     );
   }
   const base = (raw.trim() || 'http://localhost:3000').replace(/\/$/, '');
+
+  if (import.meta.env.PROD) {
+    const looksLikeLocalApi =
+      !raw.trim() ||
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(raw.trim());
+    if (looksLikeLocalApi) {
+      console.error(
+        '[BookshelfAi] Production build has no public API URL (or VITE_API_URL points at localhost). ' +
+          'On your phone, "localhost" is the phone itself — not your computer — so session and scans will fail. ' +
+          'Set VITE_API_URL in Vercel to your deployed API (https://…) and redeploy.'
+      );
+    }
+  }
+
   if (typeof window !== 'undefined') {
     const pageHttps = window.location.protocol === 'https:';
     const apiHttp = base.startsWith('http://');

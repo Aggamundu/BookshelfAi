@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import FlowStepper from '../components/flow/FlowStepper.jsx'
 import HeroSection from '../components/home/HeroSection.jsx'
 import IdentifiedBooksList from '../components/home/IdentifiedBooksList.jsx'
 import ShelfCaptureActions from '../components/home/ShelfCaptureActions.jsx'
@@ -85,8 +84,6 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-surface text-on-surface">
       <main className={`${PAGE_FLOW_MAIN} flex-grow items-center`}>
-        <FlowStepper step={1} />
-
         <HeroSection />
 
         {!sessionReady ? (
