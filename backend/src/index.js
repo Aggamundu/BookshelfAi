@@ -134,9 +134,11 @@ app.use((err, req, res, _next) => {
   res.status(status).json({ error: message });
 });
 
-app.listen(PORT, () => {
-  logger.info({ port: PORT }, 'BookshelfAI listening');
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    logger.info({ port: PORT }, 'BookshelfAI listening');
+  });
+}
 
-// Export for Vercel serverless
+// Export for Vercel serverless (when deployed)
 export default app;
