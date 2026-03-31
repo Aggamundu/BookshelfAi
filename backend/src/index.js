@@ -137,3 +137,6 @@ app.use((err, req, res, _next) => {
 app.listen(PORT, () => {
   logger.info({ port: PORT }, 'BookshelfAI listening');
 });
+
+// Export for Vercel serverless
+export default app;
