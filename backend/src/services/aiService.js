@@ -35,6 +35,30 @@ async function chatText(prompt, maxTokens = 1024) {
   return response.choices[0]?.message?.content ?? '';
 }
 
+// OpenLibrary Search (no API key required)
+async function fetchBookCover(title, author) {
+  const queryParts = [];
+  if (title) queryParts.push(`title=${encodeURIComponent(title)}`);
+  if (author) queryParts.push(`author=${encodeURIComponent(author)}`);
+  const query = queryParts.join('&');
+  const url = `https://openlibrary.org/search.json?${query}&limit=1`;
+
+  try {
+    const res = await fetch(url, { timeout: 5000 });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const doc = data.docs?.[0];
+    const coverId = doc?.cover_i;
+    if (coverId) {
+      return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+    }
+    return null;
+  } catch (e) {
+    console.warn('fetchBookCover failed', e?.message ?? e);
+    return null;
+  }
+}
+
 /**
  * Extracts visible book titles and authors from a bookshelf image (GPT-4o vision).
  * @param {Buffer} imageBuffer - Raw image bytes
@@ -119,5 +143,18 @@ Return ONLY a JSON array — no markdown, no explanation — in this exact shape
 [{"title": "...", "author": "...", "reason": "one sentence why they'd enjoy it"}, ...]`;
 
   const raw = await chatText(prompt, 1024);
-  return parseJsonArray(raw, 'recommendations');
+  const recommendations = parseJsonArray(raw, 'recommendations');
+
+  // Add optional author cover art from OpenLibrary
+  const enriched = await Promise.all(
+    recommendations.map(async (item) => {
+      const coverUrl = await fetchBookCover(item.title, item.author);
+      return {
+        ...item,
+        imageUrl: coverUrl,
+      };
+    })
+  );
+
+  return enriched;
 }
