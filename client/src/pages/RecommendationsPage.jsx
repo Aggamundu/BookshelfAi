@@ -183,6 +183,7 @@ export default function RecommendationsPage() {
                   title={rec.title}
                   author={rec.author ?? ''}
                   reason={rec.reason ?? ''}
+                  imageUrl={rec.imageUrl ?? null}
                   index={index}
                 />
               ))}
