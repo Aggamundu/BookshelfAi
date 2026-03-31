@@ -1,6 +1,8 @@
+import pino from 'pino';
 import { Ratelimit } from '@upstash/ratelimit';
 import { redis } from '../lib/upstashRedis.js';
 
+const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 let warnedNoRedis = false;
 
 /**
@@ -26,7 +28,7 @@ function createRateLimiter({ prefix, maxRequests, windowSeconds }) {
     if (!rl) {
       if (!warnedNoRedis) {
         warnedNoRedis = true;
-        console.warn('Rate limiting disabled: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.');
+        logger.warn('Rate limiting disabled: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.');
       }
       return next();
     }

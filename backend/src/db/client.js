@@ -1,6 +1,8 @@
 import pg from 'pg';
+import pino from 'pino';
 
 const { Pool } = pg;
+const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
 /**
  * Supabase and other hosted Postgres require TLS. Local dev on localhost typically does not.
@@ -19,7 +21,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected database pool error:', err);
+  logger.error({ err }, 'Unexpected database pool error');
 });
 
 export default pool;
