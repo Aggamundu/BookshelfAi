@@ -98,8 +98,9 @@ app.get('/health/ready', async (_req, res) => {
 
 if (fs.existsSync(clientIndexHtml)) {
   app.use(express.static(clientDist));
-  /** SPA: no physical /preferences etc. — unknown /api/* stays JSON 404 */
-  app.get('*', (req, res, next) => {
+  /** SPA fallback (Express 5 path-to-regexp rejects `*` / `/*` — use middleware + GET only) */
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
     if (req.path.startsWith('/api')) {
       return res.status(404).json({ error: 'Not found' });
     }
