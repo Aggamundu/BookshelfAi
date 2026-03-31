@@ -1,5 +1,4 @@
 import './loadEnv.js';
-console.log('DATABASE_URL:', process.env.DATABASE_URL);
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,17 +31,14 @@ function corsOriginConfig() {
     return true;
   }
   const raw = process.env.CORS_ORIGIN;
-  console.log('CORS_ORIGIN env:', raw);
   if (!raw?.trim()) {
     logger.warn('CORS_ORIGIN unset in production — set to your frontend URL(s), comma-separated');
     return false;
   }
-  const result = raw
+  return raw
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  console.log('corsOriginConfig returning:', result);
-  return result;
 }
 
 app.use(
