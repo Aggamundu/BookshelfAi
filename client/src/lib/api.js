@@ -11,7 +11,18 @@ export function getApiBase() {
       '[BookshelfAi] VITE_API_URL is unset — using http://localhost:3000. Add VITE_API_URL to client/.env'
     );
   }
-  return (raw.trim() || 'http://localhost:3000').replace(/\/$/, '');
+  const base = (raw.trim() || 'http://localhost:3000').replace(/\/$/, '');
+  if (typeof window !== 'undefined') {
+    const pageHttps = window.location.protocol === 'https:';
+    const apiHttp = base.startsWith('http://');
+    const apiLocal = /localhost|127\.0\.0\.1/.test(base);
+    if (pageHttps && apiHttp && !apiLocal) {
+      console.warn(
+        '[BookshelfAi] Page is HTTPS but VITE_API_URL is HTTP — browsers (especially mobile Safari) block this (mixed content). Set VITE_API_URL to https://… for your API.'
+      );
+    }
+  }
+  return base;
 }
 
 /**

@@ -20,7 +20,7 @@ export async function ensureSession() {
   const existing = getStoredUserId();
   const body = existing ? { userId: existing } : {};
   let lastErr;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
       const data = await apiFetch('/api/users/session', {
         method: 'POST',
@@ -32,10 +32,10 @@ export async function ensureSession() {
       return data;
     } catch (e) {
       lastErr = e;
-      if (!isTransientNetworkError(e) || attempt === 2) {
+      if (!isTransientNetworkError(e) || attempt === 4) {
         throw e;
       }
-      await new Promise((r) => setTimeout(r, 350 * (attempt + 1)));
+      await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
   }
   throw lastErr;
