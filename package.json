@@ -12,6 +12,7 @@
     "dev:api": "npm run dev -w backend",
     "dev:web": "npm run dev -w client",
     "start": "npm run start -w backend",
+    "start:prod": "npm run build -w client && npm run start -w backend",
     "build": "npm run build -w client",
     "build:web": "npm run build -w client",
     "verify": "node scripts/verify-env.mjs"

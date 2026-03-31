@@ -1,4 +1,7 @@
 import './loadEnv.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -13,6 +16,11 @@ import { redis } from './lib/upstashRedis.js';
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 const app = express();
 const PORT = process.env.PORT ?? 3000;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** Vite client build (repo root client/dist) — same server as API in production */
+const clientDist = path.resolve(__dirname, '../../client/dist');
+const clientIndexHtml = path.join(clientDist, 'index.html');
 
 if (process.env.TRUST_PROXY === '1' || process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
@@ -87,6 +95,22 @@ app.get('/health/ready', async (_req, res) => {
   }
   res.json({ status: 'ready', checks });
 });
+
+if (fs.existsSync(clientIndexHtml)) {
+  app.use(express.static(clientDist));
+  /** SPA: no physical /preferences etc. — unknown /api/* stays JSON 404 */
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.sendFile(clientIndexHtml, (err) => next(err));
+  });
+} else if (process.env.NODE_ENV === 'production') {
+  logger.warn(
+    { clientDist },
+    'client build not found — run `npm run build` (workspace root) before deploy; GET / will 404'
+  );
+}
 
 app.use((err, req, res, _next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
